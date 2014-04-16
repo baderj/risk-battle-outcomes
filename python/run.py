@@ -94,7 +94,6 @@ def calc_attacker_wins(A, D):
     winning_prob = calc_winning_prob(F, A, D)
     return winning_prob.attacker
 
-def 
 
 if __name__=="__main__":
     parser = argparse.ArgumentParser()
@@ -103,5 +102,5 @@ if __name__=="__main__":
     args = parser.parse_args()
     A = args.a 
     D = args.b
-    print("{} attackers win {} vs {:.1f}% defenders".format(A, D, 
-        calc_attacker_wins(A,D))*100)
+    txt = "{0} attackers have a {2:.1f}% winning chance vs {1} defenders"
+    print(txt.format(A, D, calc_attacker_wins(A,D)*100))
