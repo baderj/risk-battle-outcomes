@@ -1,7 +1,6 @@
 import numpy as np
+import argparse
 from collections import namedtuple
-A = 3 # nr of attackers
-D = 1 # nr of defenders
 
 def transition_prop(start, end):
     # from absorbing states
@@ -14,8 +13,7 @@ def transition_prop(start, end):
     j = 2 if start.defenders >= 2 else start.defenders
     k = start.defenders - end.defenders # how many units defender loses
     l = start.attackers - end.attackers # how many units attacker loses
-
-    if i == 1 and j == 1 and l == 0 and k == 0:
+    if i == 1 and j == 1 and l == 0 and k == 1:
         return 15/36.0
     if i == 1 and j == 1 and l == 1 and k == 0:
         return 21/36.0
@@ -67,19 +65,40 @@ def calc_P(A, D):
     for i in range(n):
         for j in range(n):
             p = transition_prop(states[i], states[j])
-            p = round(p*10)/10
             P[i,j] = p
     return P
 
-def slice_components(P):
-    Components = namedtuple('Components', ['Q', 'R', 'I', 'Z'])
-    return Components(P[:A*D, :A*D], P[:A*D:, A*D:], P[A*D:, A*D:], P[A*D:, :A*D])
+def slice_Q_R(P, A, D):
+    return P[:A*D, :A*D], P[:A*D:, A*D:]
 
 def calc_F(Q, R):
     I = np.identity(Q.shape[0])
+    inv = np.linalg.inv(I-Q)
+    return np.dot(inv, R)
 
-P = calc_P(A, D)
-comp = slice_components(P)
-F = calc_F(comp.Q, comp.R)
+def calc_winning_prob(F, A, D):
+    WinProb = namedtuple('WinProb', ['attacker', 'defender'])
+    pa, pd = 0,0
+    for j in range(D, D+A):
+        pa += F[A*D-1, j]
+    for j in range(0, D):
+        pd += F[A*D-1, j]
+    
+    return WinProb(pa,pd)
 
+def calc_attacker_wins(A, D):
+    P = calc_P(A, D)
+    Q, R = slice_Q_R(P, A, D)
+    F = calc_F(Q, R)
 
+    winning_prob = calc_winning_prob(F, A, D)
+    return winning_prob.attacker
+
+if __name__=="__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('a', help="nr of attackers", type=int)
+    parser.add_argument('b', help="nr of defenders", type=int)
+    args = parser.parse_args()
+    A = args.a 
+    D = args.b
+    print("{} A vs {} D = {}".format(A, D, calc_attacker_wins(A,D)))
