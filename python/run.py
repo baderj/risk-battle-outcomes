@@ -43,8 +43,8 @@ def transition_prop(start, end):
         return 2275/7776.0
     return 0
 
-def calc_states(A, D):
-    State = namedtuple('State', ['attackers', 'defenders'])
+def init_states(A, D):
+    State = namedtuple('state', ['attackers', 'defenders'])
     states = []
     # transient states
     for a in range(1, A+1):
@@ -59,7 +59,7 @@ def calc_states(A, D):
     return states
 
 def calc_P(A, D):
-    states = calc_states(A, D)
+    states = init_states(A, D)
     n = len(states)
     P = np.zeros(shape=(n,n))
     for i in range(n):
@@ -68,8 +68,16 @@ def calc_P(A, D):
             P[i,j] = p
     return P
 
-def calc_winning_prob(F, A, D):
-    WinProb = namedtuple('WinProb', ['attacker', 'defender'])
+def calc_F(A, D):
+    P = calc_P(A, D)
+    Q, R = P[:A*D, :A*D], P[:A*D:, A*D:]
+    I = np.identity(Q.shape[0])
+    inv = np.linalg.inv(I-Q)
+    return np.dot(inv, R)
+
+def calc_winning_prob(A, D):
+    F = calc_F(A, D)
+    WinProb = namedtuple('win_probility', ['attacker', 'defender'])
     pa, pd = 0,0
     for j in range(D, D+A):
         pa += F[A*D-1, j]
@@ -78,19 +86,32 @@ def calc_winning_prob(F, A, D):
     
     return WinProb(pa,pd)
 
-def calc_F(A, D):
-    P = calc_P(A, D)
-    Q, R = P[:A*D, :A*D], P[:A*D:, A*D:]
-    I = np.identity(Q.shape[0])
-    inv = np.linalg.inv(I-Q)
+def dist_mean(dist):
+    res = 0
+    for i, v in enumerate(dist):
+        res += i*v
+    return res
 
-def calc_attacker_wins(A, D):
+def calc_loss(A, D):
+    F = calc_F(A, D)
+    ExpectedLoss = namedtuple('expected_loss', ['attacker', 'defender'])
+    LossDist = namedtuple('loss_distribution', ['attacker', 'defender'])
 
-    winning_prob = calc_winning_prob(F, A, D)
-    return winning_prob.attacker
+    # probabilities of losing some
+    al, dl = (A+1)*[0], (D+1)*[0] 
+    for k in range(1, D+1):
+        dl[D-k] = F[A*D-1, k-1]
+    for k in range(1, A+1):
+        al[A-k] = F[A*D-1, D+k - 1]
 
-def expected_loss(A, D):
-
+    # probability of losing all
+    winning_prob = calc_winning_prob(A, D)
+    al[A] = winning_prob.defender
+    dl[D] = winning_prob.attacker
+    eal = dist_mean(al)
+    edl = dist_mean(dl)
+    return ExpectedLoss(eal, edl), LossDist(al, dl)
+    
 
 if __name__=="__main__":
     parser = argparse.ArgumentParser()
@@ -100,4 +121,7 @@ if __name__=="__main__":
     A = args.a 
     D = args.b
     txt = "{0} attackers have a {2:.1f}% winning chance vs {1} defenders"
-    print(txt.format(A, D, calc_attacker_wins(A,D)*100))
+    print(txt.format(A, D, calc_winning_prob(A,D).attacker*100))
+
+    ep = calc_loss(A, D)
+    print(ep)
