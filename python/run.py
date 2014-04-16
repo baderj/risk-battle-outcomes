@@ -68,14 +68,6 @@ def calc_P(A, D):
             P[i,j] = p
     return P
 
-def slice_Q_R(P, A, D):
-    return P[:A*D, :A*D], P[:A*D:, A*D:]
-
-def calc_F(Q, R):
-    I = np.identity(Q.shape[0])
-    inv = np.linalg.inv(I-Q)
-    return np.dot(inv, R)
-
 def calc_winning_prob(F, A, D):
     WinProb = namedtuple('WinProb', ['attacker', 'defender'])
     pa, pd = 0,0
@@ -86,13 +78,18 @@ def calc_winning_prob(F, A, D):
     
     return WinProb(pa,pd)
 
-def calc_attacker_wins(A, D):
+def calc_F(A, D):
     P = calc_P(A, D)
-    Q, R = slice_Q_R(P, A, D)
-    F = calc_F(Q, R)
+    Q, R = P[:A*D, :A*D], P[:A*D:, A*D:]
+    I = np.identity(Q.shape[0])
+    inv = np.linalg.inv(I-Q)
+
+def calc_attacker_wins(A, D):
 
     winning_prob = calc_winning_prob(F, A, D)
     return winning_prob.attacker
+
+def expected_loss(A, D):
 
 
 if __name__=="__main__":
