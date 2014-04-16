@@ -111,6 +111,11 @@ def calc_loss(A, D):
     eal = dist_mean(al)
     edl = dist_mean(dl)
     return ExpectedLoss(eal, edl), LossDist(al, dl)
+
+def _print_loss_info(exp, dist, who):
+    print("The {} will lose the following number of units:")
+    for i, v in enumerate(dist):
+        print("{:<2} {:<.1f}%".format(i, v))
     
 
 if __name__=="__main__":
@@ -122,6 +127,6 @@ if __name__=="__main__":
     D = args.b
     txt = "{0} attackers have a {2:.1f}% winning chance vs {1} defenders"
     print(txt.format(A, D, calc_winning_prob(A,D).attacker*100))
+    exploss, lossdist = calc_loss(A, D)
 
-    ep = calc_loss(A, D)
-    print(ep)
+    _print_loss_info(exploss.attacker, lossdist.attacker, "Attacker")
