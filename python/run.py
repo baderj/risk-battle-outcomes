@@ -1,5 +1,6 @@
 import numpy as np
 import argparse
+import json
 from collections import namedtuple
 
 def transition_prop(start, end):
@@ -118,17 +119,40 @@ def _print_loss_info(exp, dist, who):
         print("{:>2}: {:>3.1f}%".format(i, v*100))
     print("(the expected loss is {:.2f})".format(exp))
     
-
+def _perc(c, r):
+    return round(c*100*pow(10,r))/ pow(10,r)
+    
+def _round(c, r):
+    return round(c*pow(10,r))/ pow(10,r)
+    
 if __name__=="__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('a', help="nr of attackers", type=int)
-    parser.add_argument('b', help="nr of defenders", type=int)
+    parser.add_argument('--full', help="create matrix", action="store_true")
+    parser.add_argument('attackers', help="(maximum) nr of attackers", type=int)
+    parser.add_argument('defenders', help="(maximum) nr of defenders", type=int)
     args = parser.parse_args()
-    A = args.a 
-    D = args.b
-    txt = "{0} attackers have a {2:.1f}% winning chance vs {1} defenders"
-    print(txt.format(A, D, calc_winning_prob(A,D).attacker*100))
-    exploss, lossdist = calc_loss(A, D)
-
-    _print_loss_info(exploss.attacker, lossdist.attacker, "attacker")
-    _print_loss_info(exploss.defender, lossdist.defender, "defender")
+    if not args.full:
+        A = args.attackers
+        D = args.defenders
+        txt = "{0} attackers have a {2:.1f}% winning chance vs {1} defenders"
+        print(txt.format(A, D, calc_winning_prob(A,D).attacker*100))
+        exploss, lossdist = calc_loss(A, D)
+        _print_loss_info(exploss.attacker, lossdist.attacker, "attacker")
+        _print_loss_info(exploss.defender, lossdist.defender, "defender")
+    else:
+        res = {}
+        for A in range(1, args.attackers+1):        
+            for D in range(1, args.defenders+1):
+                print(A,D)
+                wp = calc_winning_prob(A,D)
+                exploss, lossdist = calc_loss(A, D)
+                res["{}v{}".format(A,D)] = {"wp":(_perc(wp.attacker,1), _perc(wp.defender,1)),
+                    "da": [_perc(x,1) for x in lossdist.attacker],
+                    "db": [_perc(x,1) for x in lossdist.defender],
+                    "ea": _round(exploss.attacker,2),
+                    "ed": _round(exploss.attacker,2)}
+        with open('out.txt', 'w') as w:
+            w.write(json.dumps(res))
+        
+                
+                
