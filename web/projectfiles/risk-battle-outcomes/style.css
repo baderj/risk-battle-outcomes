@@ -1,0 +1,42 @@
+svg text {    
+    font-family: 'Exo';
+    font-weight: 400;
+}
+text.picker {
+    font-size: 52px;
+    font-weight: 700;    
+}
+rect.overlay {
+    fill: #FFFFFF;
+    opacity: 0;
+    width: 43px;
+    height: 53px;
+    cursor: pointer;
+}
+rect.bar_a {
+    fill: #77A319;
+    stroke: none;
+}
+rect.bar_d {
+    fill: #811104;
+    stroke: none;
+}
+text.win_perc {
+    fill: #FFFFFF;
+    font-size: 44px;
+}
+text.perc_sign {
+    fill: #FFFFFF;
+    font-size: 28px;
+}
+text.expected_loss_text {
+    font-size: 24px;
+    font-weight: 400;
+}
+text.expected_loss_value {
+    font-size: 48px;
+    font-weight: 400;
+}
+text.loss_nr {
+    fill: #FFFFFF;
+}
