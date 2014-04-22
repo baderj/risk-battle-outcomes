@@ -1,4 +1,5 @@
 import numpy as np
+import textwrap
 import argparse
 import json
 from collections import namedtuple
@@ -148,11 +149,12 @@ if __name__=="__main__":
                 exploss, lossdist = calc_loss(A, D)
                 res["{}v{}".format(A,D)] = {"wp":(_perc(wp.attacker,1), _perc(wp.defender,1)),
                     "da": [_perc(x,1) for x in lossdist.attacker],
-                    "db": [_perc(x,1) for x in lossdist.defender],
+                    "dd": [_perc(x,1) for x in lossdist.defender],
                     "ea": _round(exploss.attacker,2),
                     "ed": _round(exploss.attacker,2)}
         with open('out.txt', 'w') as w:
-            w.write(json.dumps(res))
+            dmp = str(json.dumps(res))
+            w.write(textwrap.fill(dmp,80))
         
                 
                 
