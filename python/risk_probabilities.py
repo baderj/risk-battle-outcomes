@@ -151,7 +151,7 @@ if __name__=="__main__":
                     "da": [_perc(x,1) for x in lossdist.attacker],
                     "dd": [_perc(x,1) for x in lossdist.defender],
                     "ea": _round(exploss.attacker,2),
-                    "ed": _round(exploss.attacker,2)}
+                    "ed": _round(exploss.defender,2)}
         with open('out.txt', 'w') as w:
             dmp = str(json.dumps(res))
             w.write(textwrap.fill(dmp,80))
